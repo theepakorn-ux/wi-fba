@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STAFF
+  OFFICE_HEAD
+  VICE_DEAN
+  DEAN
+  ADMIN
+}
+
+enum ProposalStatus {
+  DRAFT
+  SUBMITTED
+  OFFICE_REVIEW
+  REVISION_REQUESTED
+  EVALUATED
+  VICE_DEAN_REVIEW
+  DEAN_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ReviewStage {
+  OFFICE_HEAD
+  VICE_DEAN
+  DEAN
+}
+
+enum ReviewDecision {
+  REQUEST_REVISION
+  EVALUATE
+  RECOMMEND_APPROVAL
+  RECOMMEND_REJECTION
+  APPROVE
+  REJECT
+}
+
+model User {
+  id              String                  @id @default(cuid())
+  googleAccountId String                  @unique
+  email           String                  @unique
+  name            String
+  imageUrl        String?
+  role            Role                    @default(STAFF)
+  departmentId    String?
+  department      Department?             @relation(fields: [departmentId], references: [id])
+  isActive        Boolean                 @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  proposals       ImprovementProposal[]   @relation("ProposalSubmitter")
+  reviews         ProposalReview[]        @relation("ProposalReviewer")
+  statusChanges   ProposalStatusHistory[] @relation("StatusActor")
+  auditLogs       AuditLog[]              @relation("AuditActor")
+}
+
+model Department {
+  id        String                @id @default(cuid())
+  name      String
+  code      String                @unique
+  isActive  Boolean               @default(true)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  users     User[]
+  proposals ImprovementProposal[]
+}
+
+model ImprovementProposal {
+  id                  String                  @id @default(cuid())
+  title               String
+  problemStatement    String
+  proposedImprovement String
+  expectedBenefit     String
+  submitterId         String
+  submitter           User                    @relation("ProposalSubmitter", fields: [submitterId], references: [id])
+  departmentId        String
+  department          Department              @relation(fields: [departmentId], references: [id])
+  status              ProposalStatus          @default(DRAFT)
+  submittedAt         DateTime?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  reviews             ProposalReview[]
+  statusHistories     ProposalStatusHistory[]
+}
+
+model ProposalReview {
+  id                String              @id @default(cuid())
+  proposalId        String
+  proposal          ImprovementProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  reviewerId        String
+  reviewer          User                @relation("ProposalReviewer", fields: [reviewerId], references: [id])
+  reviewStage       ReviewStage
+  decision          ReviewDecision
+  comment           String
+  evaluationScore   Int?
+  evaluationSummary String?
+  createdAt         DateTime            @default(now())
+}
+
+model ProposalStatusHistory {
+  id         String              @id @default(cuid())
+  proposalId String
+  proposal   ImprovementProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  fromStatus ProposalStatus?
+  toStatus   ProposalStatus
+  actorId    String
+  actor      User                @relation("StatusActor", fields: [actorId], references: [id])
+  comment    String?
+  createdAt  DateTime            @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+}
