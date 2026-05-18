@@ -63,7 +63,21 @@ Detailed rules:
 
 Security rationale: automatic approval is acceptable because access is restricted to university Google accounts, but elevated role assignment must remain admin-controlled to prevent privilege escalation.
 
-## 5. User Roles
+## 5. Initial Admin Bootstrap
+
+Because elevated roles are admin-managed, the system needs a controlled way to create the first administrator.
+
+Recommended approach:
+
+1. Define `INITIAL_ADMIN_EMAILS` in the environment during initial setup.
+2. Each email in `INITIAL_ADMIN_EMAILS` must still be under `rmutsv.ac.th`.
+3. When a matching user signs in for the first time, the system assigns `ADMIN` automatically.
+4. After the first production setup is complete, the deployment owner should remove or freeze the bootstrap list.
+5. Any later admin assignment must be performed from the admin screen and recorded in `AuditLog`.
+
+This avoids a deadlock where no user can assign the first admin role.
+
+## 6. User Roles
 
 The MVP roles are:
 
@@ -73,7 +87,7 @@ The MVP roles are:
 - `DEAN`: Performs final approval or rejection.
 - `ADMIN`: Manages users, roles, departments, settings, and audit review.
 
-## 6. Proposal Workflow
+## 7. Proposal Workflow
 
 The approved workflow is:
 
@@ -103,7 +117,7 @@ Key workflow rules:
 7. Every status transition must create a status history record.
 8. Every decision must record actor, timestamp, previous status, new status, comments, and optional evaluation fields.
 
-## 7. Core Data Model
+## 8. Core Data Model
 
 Initial entities:
 
@@ -169,7 +183,8 @@ Essential fields:
 - reviewStage
 - decision
 - comment
-- evaluationScore or evaluationSummary
+- evaluationScore
+- evaluationSummary
 - createdAt
 
 `ProposalStatusHistory`
@@ -192,7 +207,7 @@ Essential fields:
 - metadata
 - createdAt
 
-## 8. Access Control
+## 9. Access Control
 
 Access control must be enforced on the server side, not only in the UI.
 
@@ -207,7 +222,7 @@ Recommended rules:
 7. Elevated role assignment requires admin permission.
 8. Direct API access must re-check session, role, ownership, and workflow state.
 
-## 9. PDPA and Data Governance
+## 10. PDPA and Data Governance
 
 The system handles personal data and should include PDPA-aware controls from the first release.
 
@@ -222,7 +237,7 @@ Required design items:
 7. Data subject rights process: define how users can request access, correction, or deletion where legally appropriate.
 8. Vendor review: document use of Google OAuth, hosting provider, and database provider as external processors or service providers.
 
-## 10. Browser Compatibility
+## 11. Browser Compatibility
 
 The application should support current versions of:
 
@@ -237,7 +252,7 @@ Implementation guidance:
 3. Test authentication flow and responsive pages in Chromium and WebKit before release.
 4. Avoid design or JavaScript features that behave inconsistently across Safari and Chromium without fallback.
 
-## 11. Responsive UX Requirements
+## 12. Responsive UX Requirements
 
 The application must be usable on desktop, tablet, and mobile browsers.
 
@@ -251,7 +266,7 @@ Required responsive behavior:
 6. Text must not overflow buttons, cards, menus, or table cells.
 7. Dashboard and report filters must work on mobile and desktop.
 
-## 12. Reporting Requirements
+## 13. Reporting Requirements
 
 MVP reports should include:
 
@@ -264,7 +279,7 @@ MVP reports should include:
 
 Exports can be deferred unless required in the first release.
 
-## 13. Error Handling
+## 14. Error Handling
 
 Recommended behavior:
 
@@ -274,7 +289,7 @@ Recommended behavior:
 4. Failed database operations should show user-safe messages and log technical details server-side.
 5. Validation errors should be shown near the relevant form fields.
 
-## 14. Testing Strategy
+## 15. Testing Strategy
 
 Initial verification should include:
 
@@ -286,7 +301,7 @@ Initial verification should include:
 6. Browser checks in Chromium and WebKit.
 7. CI checks for typecheck, lint, tests, and Prisma validation.
 
-## 15. Repository and Environment Setup
+## 16. Repository and Environment Setup
 
 After this design is approved, implementation should proceed with:
 
@@ -300,11 +315,12 @@ After this design is approved, implementation should proceed with:
    - `AUTH_GOOGLE_ID`
    - `AUTH_GOOGLE_SECRET`
    - `ALLOWED_GOOGLE_DOMAIN=rmutsv.ac.th`
+   - `INITIAL_ADMIN_EMAILS`
 6. Add README with setup instructions for MacBook Pro M1, VS Code, GitHub, and deployment.
 7. Add GitHub Actions for CI.
 8. Add branch strategy documentation.
 
-## 16. Open Decisions Before Implementation
+## 17. Open Decisions Before Implementation
 
 The following decisions should be confirmed before coding begins:
 
@@ -314,6 +330,6 @@ The following decisions should be confirmed before coding begins:
 4. Whether report export to Excel/PDF is required in MVP.
 5. Official retention period for proposal and audit records.
 
-## 17. Approval Gate
+## 18. Approval Gate
 
 This design is ready for user review. After approval, the next step is to create a detailed implementation plan before scaffolding the application.
