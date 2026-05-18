@@ -67,9 +67,13 @@ Security rationale: automatic approval is acceptable because access is restricte
 
 Because elevated roles are admin-managed, the system needs a controlled way to create the first administrator.
 
+Approved initial admin:
+
+- `theepakorn.n@rmutsv.ac.th`
+
 Recommended approach:
 
-1. Define `INITIAL_ADMIN_EMAILS` in the environment during initial setup.
+1. Define `INITIAL_ADMIN_EMAILS=theepakorn.n@rmutsv.ac.th` in the environment during initial setup.
 2. Each email in `INITIAL_ADMIN_EMAILS` must still be under `rmutsv.ac.th`.
 3. When a matching user signs in for the first time, the system assigns `ADMIN` automatically.
 4. After the first production setup is complete, the deployment owner should remove or freeze the bootstrap list.
@@ -315,7 +319,7 @@ After this design is approved, implementation should proceed with:
    - `AUTH_GOOGLE_ID`
    - `AUTH_GOOGLE_SECRET`
    - `ALLOWED_GOOGLE_DOMAIN=rmutsv.ac.th`
-   - `INITIAL_ADMIN_EMAILS`
+   - `INITIAL_ADMIN_EMAILS=theepakorn.n@rmutsv.ac.th`
 6. Add README with setup instructions for MacBook Pro M1, VS Code, GitHub, and deployment.
 7. Add GitHub Actions for CI.
 8. Add branch strategy documentation.
